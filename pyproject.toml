@@ -1,0 +1,59 @@
+[tool.poetry]
+name = "ai-news-aggregator"
+version = "1.0.0"
+description = "AI News Aggregator Bot for Raspberry Pi - Monitors AI news and research, summarizes content, and posts to Telegram"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "ai_news_bot"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+aiohttp = "^3.9.1"
+aiogram = "^3.3.0"
+feedparser = "^6.0.10"
+beautifulsoup4 = "^4.12.2"
+openai = "^1.12.0"
+python-dotenv = "^1.0.1"
+apscheduler = "^3.10.4"
+aiosqlite = "^0.19.0"
+httpx = "^0.26.0"
+lxml = "^5.1.0"
+certifi = "^2023.11.17"
+aiofiles = "^23.2.0"
+transformers = {version = "^4.37.0", optional = true}
+torch = {version = "^2.1.0", optional = true}
+sentence-transformers = {version = "^2.2.2", optional = true}
+accelerate = {version = "^0.25.0", optional = true}
+bitsandbytes = {version = "^0.41.0", optional = true}
+safetensors = {version = "^0.4.1", optional = true}
+tokenizers = {version = "^0.15.0", optional = true}
+datasets = {version = "^2.16.0", optional = true}
+
+[tool.poetry.extras]
+local-models = ["transformers", "torch", "sentence-transformers", "accelerate", "safetensors", "tokenizers"]
+local-models-quantized = ["transformers", "torch", "sentence-transformers", "accelerate", "bitsandbytes", "safetensors", "tokenizers"]
+local-models-full = ["transformers", "torch", "sentence-transformers", "accelerate", "bitsandbytes", "safetensors", "tokenizers", "datasets"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+pytest-asyncio = "^0.23.2"
+black = "^23.12.1"
+flake8 = "^7.0.0"
+mypy = "^1.8.0"
+
+[tool.poetry.scripts]
+ai-news-bot = "ai_news_bot.main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
