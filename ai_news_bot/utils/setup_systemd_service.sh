@@ -31,7 +31,7 @@ print_step() {
 
 # Get script directory and project path
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-PROJECT_DIR=$(basedir $(basedir "$SCRIPT_DIR"))
+PROJECT_DIR=$(dirname $(dirname "$SCRIPT_DIR"))
 USER=$(whoami)
 SERVICE_NAME="ai-news-bot"
 
