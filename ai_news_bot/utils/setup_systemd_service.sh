@@ -31,7 +31,7 @@ print_step() {
 
 # Get script directory and project path
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-PROJECT_DIR="$SCRIPT_DIR"
+PROJECT_DIR=$(basedir $(basedir "$SCRIPT_DIR"))
 USER=$(whoami)
 SERVICE_NAME="ai-news-bot"
 
@@ -81,7 +81,22 @@ install_dependencies() {
     print_step "Installing project dependencies..."
     
     cd "$PROJECT_DIR"
-    poetry install --no-dev
+    
+    # Check Poetry version and use appropriate command
+    POETRY_VERSION=$(poetry --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+    MAJOR_VERSION=$(echo "$POETRY_VERSION" | cut -d. -f1)
+    MINOR_VERSION=$(echo "$POETRY_VERSION" | cut -d. -f2)
+    
+    print_status "Poetry version: $POETRY_VERSION"
+    
+    # Use appropriate install command based on version
+    if [[ $MAJOR_VERSION -gt 1 ]] || [[ $MAJOR_VERSION -eq 1 && $MINOR_VERSION -ge 2 ]]; then
+        # Poetry 1.2+ uses --only=main instead of --no-dev
+        poetry install --only=main
+    else
+        # Older Poetry versions
+        poetry install --no-dev
+    fi
     
     print_status "Dependencies installed"
 }
@@ -331,8 +346,16 @@ update_service() {
     
     cd "$PROJECT_DIR"
     
-    # Update dependencies
-    poetry install --no-dev
+    # Update dependencies (check Poetry version)
+    POETRY_VERSION=$(poetry --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+    MAJOR_VERSION=$(echo "$POETRY_VERSION" | cut -d. -f1)
+    MINOR_VERSION=$(echo "$POETRY_VERSION" | cut -d. -f2)
+    
+    if [[ $MAJOR_VERSION -gt 1 ]] || [[ $MAJOR_VERSION -eq 1 && $MINOR_VERSION -ge 2 ]]; then
+        poetry install --only=main
+    else
+        poetry install --no-dev
+    fi
     
     # Restart service
     restart_service
