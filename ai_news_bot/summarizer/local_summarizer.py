@@ -101,16 +101,33 @@ class LocalSummarizer(BaseSummarizer):
             else:
                 model_kwargs["device_map"] = "auto"
             
-            self.model = AutoModelForSeq2SeqLM.from_pretrained(
-                self.model_name,
-                **model_kwargs
-            )
+            # Try loading with better error handling
+            try:
+                self.model = AutoModelForSeq2SeqLM.from_pretrained(
+                    self.model_name,
+                    **model_kwargs
+                )
+            except Exception as e:
+                self.logger.warning(f"Failed to load with optimized settings: {e}")
+                # Fallback to basic loading
+                self.logger.info("Trying fallback model loading...")
+                self.model = AutoModelForSeq2SeqLM.from_pretrained(
+                    self.model_name,
+                    cache_dir=str(self.cache_dir),
+                    torch_dtype=torch.float32,  # Use float32 as fallback
+                    low_cpu_mem_usage=False,
+                    device_map=None
+                )
             
             # Move to device if not using device_map
             if not quantization_config and self.device != "auto":
                 device = torch.device(self.device if torch.cuda.is_available() or self.device == "cpu" else "cpu")
-                self.model = self.model.to(device)
-                self.logger.info(f"Model moved to device: {device}")
+                try:
+                    self.model = self.model.to(device)
+                    self.logger.info(f"Model moved to device: {device}")
+                except Exception as e:
+                    self.logger.warning(f"Could not move model to device {device}: {e}")
+                    self.logger.info("Using CPU as fallback")
             
             # Set to evaluation mode and optimize for inference
             self.model.eval()
