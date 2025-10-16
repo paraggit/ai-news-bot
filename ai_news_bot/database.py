@@ -58,6 +58,9 @@ class DatabaseManager:
             )
         """)
         
+        # Migrate existing database - add new columns if they don't exist
+        await self._migrate_schema()
+        
         # Index on URL for fast lookups
         await self.db.execute("""
             CREATE INDEX IF NOT EXISTS idx_articles_url ON articles(url)
@@ -137,6 +140,38 @@ class DatabaseManager:
         """)
         
         await self.db.commit()
+    
+    async def _migrate_schema(self) -> None:
+        """Migrate existing database schema to add new columns if needed."""
+        try:
+            # Check if topics column exists
+            cursor = await self.db.execute("PRAGMA table_info(articles)")
+            columns = await cursor.fetchall()
+            await cursor.close()
+            
+            column_names = [col[1] for col in columns]
+            
+            # Add missing columns
+            if 'topics' not in column_names:
+                logger.info("Migrating database: adding 'topics' column")
+                await self.db.execute("ALTER TABLE articles ADD COLUMN topics TEXT")
+            
+            if 'keywords' not in column_names:
+                logger.info("Migrating database: adding 'keywords' column")
+                await self.db.execute("ALTER TABLE articles ADD COLUMN keywords TEXT")
+            
+            if 'relevance_score' not in column_names:
+                logger.info("Migrating database: adding 'relevance_score' column")
+                await self.db.execute(
+                    "ALTER TABLE articles ADD COLUMN relevance_score REAL DEFAULT 0.0"
+                )
+            
+            await self.db.commit()
+            logger.info("Database schema migration completed")
+            
+        except Exception as e:
+            logger.error(f"Error during schema migration: {e}")
+            # Don't fail if migration has issues - columns might already exist
     
     async def article_exists(self, url: str) -> bool:
         """Check if an article URL has already been processed."""
