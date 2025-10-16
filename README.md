@@ -168,6 +168,15 @@ A comprehensive **AI-powered news aggregation system** designed specifically for
 - Intelligent message splitting for long content
 - Rate limiting and error handling
 
+### 🔍 **Advanced Search & Discovery** ⭐ NEW!
+- **Full-Text Search**: Fast SQLite FTS5 search across all articles
+- **AI Relevance Scoring**: Automatic scoring (0-100) of article relevance
+- **Topic Categorization**: 10 AI topic categories (LLMs, CV, NLP, etc.)
+- **Smart Deduplication**: Intelligent detection of similar articles
+- **Trending Analysis**: Identify hot topics in AI research
+- **CLI Search Tool**: Search your database from the command line
+- **Advanced Filtering**: Filter by source, topic, relevance, date range
+
 ### 🔧 **Production Features**
 - **Async Architecture**: Non-blocking I/O for efficient resource usage
 - **SQLite Database**: Track processed articles and prevent duplicates
@@ -212,6 +221,58 @@ ai-news-aggregator/
 └── logs/                      # Application logs
     └── app.log
 ```
+
+## 🔍 Search Features Quick Start
+
+The news aggregator now includes powerful search and discovery features! 
+
+### **Search from Command Line**
+
+```bash
+# Search for articles about GPT
+python -m ai_news_bot.cli_search search --query "GPT"
+
+# Filter by AI topic
+python -m ai_news_bot.cli_search search --topic "Large Language Models"
+
+# Get top articles from last 24 hours  
+python -m ai_news_bot.cli_search top
+
+# Show trending topics
+python -m ai_news_bot.cli_search trending
+
+# Database statistics
+python -m ai_news_bot.cli_search stats
+
+# See all available topics
+python -m ai_news_bot.cli_search topics
+```
+
+### **Search from Python**
+
+```python
+from ai_news_bot.database import DatabaseManager
+from ai_news_bot.utils import NewsSearchEngine
+
+db = DatabaseManager("data/news_aggregator.db")
+await db.initialize()
+search_engine = NewsSearchEngine(db)
+
+# Search with filters
+results = await search_engine.search(
+    query="transformer",
+    topics=["Large Language Models"],
+    min_relevance=70.0,
+    days_back=7
+)
+```
+
+📚 **For detailed documentation, see:**
+- `SEARCH_IMPROVEMENTS_SUMMARY.md` - Quick overview
+- `NEWS_SEARCH_IMPROVEMENTS.md` - Complete documentation
+- `examples/search_examples.py` - Example scripts
+
+---
 
 ## 🚀 Quick Start
 

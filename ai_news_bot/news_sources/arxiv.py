@@ -68,6 +68,8 @@ class ArXivSource(NewsSource):
                 try:
                     paper = self._parse_arxiv_entry(entry)
                     if paper and paper.is_valid:
+                        # Enrich paper with metadata
+                        paper = self._enrich_article_metadata(paper)
                         papers.append(paper)
                 except Exception as e:
                     self.logger.error(f"Error parsing arXiv entry: {e}")

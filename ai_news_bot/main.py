@@ -10,7 +10,6 @@ import asyncio
 import signal
 import sys
 from pathlib import Path
-from typing import List
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -73,6 +72,32 @@ class AINewsAggregator:
             
             self.logger.info(f"Found {len(new_articles)} new articles to process")
             
+            # Remove duplicates based on title similarity
+            from .utils import ArticleFilter
+            article_filter = ArticleFilter()
+            
+            # Convert Article objects to dicts for filtering
+            article_dicts = [
+                {
+                    'title': a.title,
+                    'url': a.url,
+                    'relevance_score': a.relevance_score,
+                    'article_obj': a
+                }
+                for a in new_articles
+            ]
+            
+            # Remove duplicates
+            unique_articles = article_filter.remove_duplicates(article_dicts, similarity_threshold=0.8)
+            
+            # Rank by quality
+            ranked_articles = article_filter.rank_by_quality(unique_articles)
+            
+            # Extract Article objects
+            new_articles = [a['article_obj'] for a in ranked_articles]
+            
+            self.logger.info(f"After deduplication and ranking: {len(new_articles)} articles")
+            
             # Limit articles per run to avoid overwhelming
             if len(new_articles) > self.config.max_articles_per_run:
                 new_articles = new_articles[:self.config.max_articles_per_run]
@@ -112,15 +137,21 @@ class AINewsAggregator:
             )
             
             if success:
-                # Save to database as processed
+                # Save to database as processed with enriched metadata
                 await self.db_manager.save_article(
                     url=article.url,
                     title=article.title,
                     source=article.source,
                     summary=summary,
-                    original_content=article.content[:1000]  # Store first 1000 chars
+                    original_content=article.content[:1000],  # Store first 1000 chars
+                    topics=','.join(article.topics) if article.topics else None,
+                    keywords=','.join(article.keywords) if article.keywords else None,
+                    relevance_score=article.relevance_score
                 )
-                self.logger.info(f"Successfully processed and posted: {article.title}")
+                self.logger.info(
+                    f"Successfully processed and posted: {article.title} "
+                    f"(relevance: {article.relevance_score:.1f})"
+                )
             else:
                 self.logger.error(f"Failed to post article to Telegram: {article.title}")
                 

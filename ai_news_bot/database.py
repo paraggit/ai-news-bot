@@ -6,7 +6,6 @@ and maintaining state across application restarts.
 """
 
 import aiosqlite
-import asyncio
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, List, Dict, Any
@@ -51,6 +50,9 @@ class DatabaseManager:
                 source TEXT NOT NULL,
                 summary TEXT,
                 original_content TEXT,
+                topics TEXT,
+                keywords TEXT,
+                relevance_score REAL DEFAULT 0.0,
                 processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -65,6 +67,50 @@ class DatabaseManager:
         await self.db.execute("""
             CREATE INDEX IF NOT EXISTS idx_articles_source_date 
             ON articles(source, processed_at)
+        """)
+        
+        # Index on topics for filtering
+        await self.db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_articles_topics ON articles(topics)
+        """)
+        
+        # Index on relevance score
+        await self.db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_articles_relevance ON articles(relevance_score DESC)
+        """)
+        
+        # Create full-text search virtual table
+        await self.db.execute("""
+            CREATE VIRTUAL TABLE IF NOT EXISTS articles_fts USING fts5(
+                title, summary, original_content, keywords,
+                content='articles',
+                content_rowid='id'
+            )
+        """)
+        
+        # Create triggers to keep FTS table in sync
+        await self.db.execute("""
+            CREATE TRIGGER IF NOT EXISTS articles_ai AFTER INSERT ON articles BEGIN
+                INSERT INTO articles_fts(rowid, title, summary, original_content, keywords)
+                VALUES (new.id, new.title, new.summary, new.original_content, new.keywords);
+            END
+        """)
+        
+        await self.db.execute("""
+            CREATE TRIGGER IF NOT EXISTS articles_ad AFTER DELETE ON articles BEGIN
+                DELETE FROM articles_fts WHERE rowid = old.id;
+            END
+        """)
+        
+        await self.db.execute("""
+            CREATE TRIGGER IF NOT EXISTS articles_au AFTER UPDATE ON articles BEGIN
+                UPDATE articles_fts SET 
+                    title = new.title,
+                    summary = new.summary,
+                    original_content = new.original_content,
+                    keywords = new.keywords
+                WHERE rowid = new.id;
+            END
         """)
         
         # Failed articles table to track processing failures
@@ -112,7 +158,10 @@ class DatabaseManager:
         title: str, 
         source: str, 
         summary: str,
-        original_content: Optional[str] = None
+        original_content: Optional[str] = None,
+        topics: Optional[str] = None,
+        keywords: Optional[str] = None,
+        relevance_score: float = 0.0
     ) -> None:
         """Save a processed article to the database."""
         if not self.db:
@@ -121,9 +170,10 @@ class DatabaseManager:
         try:
             await self.db.execute("""
                 INSERT OR REPLACE INTO articles 
-                (url, title, source, summary, original_content, processed_at)
-                VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """, (url, title, source, summary, original_content))
+                (url, title, source, summary, original_content, topics, keywords, 
+                 relevance_score, processed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """, (url, title, source, summary, original_content, topics, keywords, relevance_score))
             
             await self.db.commit()
             logger.debug(f"Saved article: {title}")
@@ -300,6 +350,175 @@ class DatabaseManager:
         await cursor.close()
         
         return result[0] if result else None
+    
+    async def search_articles(
+        self,
+        query: Optional[str] = None,
+        sources: Optional[List[str]] = None,
+        topics: Optional[List[str]] = None,
+        min_relevance: Optional[float] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        limit: int = 50,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """
+        Search articles with advanced filtering.
+        
+        Args:
+            query: Full-text search query
+            sources: Filter by source names
+            topics: Filter by topics
+            min_relevance: Minimum relevance score
+            start_date: Filter articles after this date
+            end_date: Filter articles before this date
+            limit: Maximum number of results
+            offset: Offset for pagination
+        
+        Returns:
+            List of articles matching the search criteria
+        """
+        if not self.db:
+            raise RuntimeError("Database not initialized")
+        
+        # Build the query dynamically
+        if query:
+            # Use full-text search
+            sql = """
+                SELECT a.id, a.url, a.title, a.source, a.summary, a.topics, 
+                       a.keywords, a.relevance_score, a.processed_at,
+                       articles_fts.rank as search_rank
+                FROM articles a
+                INNER JOIN articles_fts ON articles_fts.rowid = a.id
+                WHERE articles_fts MATCH ?
+            """
+            params = [query]
+        else:
+            # Regular search without full-text
+            sql = """
+                SELECT id, url, title, source, summary, topics, keywords,
+                       relevance_score, processed_at, 0 as search_rank
+                FROM articles
+                WHERE 1=1
+            """
+            params = []
+        
+        # Add filters
+        if sources:
+            placeholders = ','.join('?' * len(sources))
+            sql += f" AND source IN ({placeholders})"
+            params.extend(sources)
+        
+        if topics:
+            # Search for any of the topics in the topics field
+            topic_conditions = " OR ".join(["topics LIKE ?" for _ in topics])
+            sql += f" AND ({topic_conditions})"
+            params.extend([f"%{topic}%" for topic in topics])
+        
+        if min_relevance is not None:
+            sql += " AND relevance_score >= ?"
+            params.append(min_relevance)
+        
+        if start_date:
+            sql += " AND processed_at >= ?"
+            params.append(start_date)
+        
+        if end_date:
+            sql += " AND processed_at <= ?"
+            params.append(end_date)
+        
+        # Order by relevance and search rank
+        if query:
+            sql += " ORDER BY search_rank, relevance_score DESC, processed_at DESC"
+        else:
+            sql += " ORDER BY relevance_score DESC, processed_at DESC"
+        
+        # Add pagination
+        sql += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+        
+        cursor = await self.db.execute(sql, params)
+        results = await cursor.fetchall()
+        await cursor.close()
+        
+        articles = []
+        for row in results:
+            articles.append({
+                "id": row[0],
+                "url": row[1],
+                "title": row[2],
+                "source": row[3],
+                "summary": row[4],
+                "topics": row[5].split(',') if row[5] else [],
+                "keywords": row[6].split(',') if row[6] else [],
+                "relevance_score": row[7],
+                "processed_at": row[8],
+                "search_rank": row[9] if query else None
+            })
+        
+        return articles
+    
+    async def get_articles_by_topic(self, topic: str, limit: int = 20) -> List[Dict[str, Any]]:
+        """Get articles filtered by a specific topic."""
+        return await self.search_articles(topics=[topic], limit=limit)
+    
+    async def get_top_articles(self, hours: int = 24, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get top articles by relevance score in the last N hours."""
+        start_date = datetime.now() - timedelta(hours=hours)
+        return await self.search_articles(
+            start_date=start_date,
+            limit=limit
+        )
+    
+    async def find_similar_articles(self, title: str, threshold: float = 0.7) -> List[Dict[str, Any]]:
+        """
+        Find articles with similar titles using simple string matching.
+        For better similarity, consider using sentence transformers.
+        """
+        if not self.db:
+            raise RuntimeError("Database not initialized")
+        
+        # Simple approach: search for articles with similar keywords
+        # Extract significant words from title
+        import re
+        words = re.findall(r'\w+', title.lower())
+        significant_words = [w for w in words if len(w) > 4][:5]  # Use longest words
+        
+        if not significant_words:
+            return []
+        
+        # Use full-text search to find similar articles
+        query = " OR ".join(significant_words)
+        return await self.search_articles(query=query, limit=10)
+    
+    async def get_trending_topics(self, days: int = 7) -> Dict[str, int]:
+        """Get trending topics in the last N days."""
+        if not self.db:
+            raise RuntimeError("Database not initialized")
+        
+        start_date = datetime.now() - timedelta(days=days)
+        
+        cursor = await self.db.execute("""
+            SELECT topics FROM articles
+            WHERE processed_at >= ? AND topics IS NOT NULL
+        """, (start_date,))
+        
+        results = await cursor.fetchall()
+        await cursor.close()
+        
+        # Count topic occurrences
+        topic_counts = {}
+        for row in results:
+            if row[0]:
+                topics = row[0].split(',')
+                for topic in topics:
+                    topic = topic.strip()
+                    if topic:
+                        topic_counts[topic] = topic_counts.get(topic, 0) + 1
+        
+        # Sort by count
+        sorted_topics = dict(sorted(topic_counts.items(), key=lambda x: x[1], reverse=True))
+        return sorted_topics
     
     async def close(self) -> None:
         """Close the database connection."""

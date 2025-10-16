@@ -60,6 +60,8 @@ class RSSFeedSource(NewsSource):
                 try:
                     article = await self._parse_rss_entry(entry, feed_name)
                     if article and article.is_valid:
+                        # Enrich article with metadata
+                        article = self._enrich_article_metadata(article)
                         articles.append(article)
                 except Exception as e:
                     self.logger.error(f"Error parsing entry from {feed_name}: {e}")

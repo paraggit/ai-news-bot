@@ -27,9 +27,9 @@ class Config:
     deepseek_api_key: Optional[str] = None
     deepseek_base_url: str = "https://api.deepseek.com/v1"
     
-    # News Fetching Configuration
+    # News Fetching Configuration (increased for expanded sources)
     fetch_interval_minutes: int = 30
-    max_articles_per_run: int = 10
+    max_articles_per_run: int = 15
     
     # Database Configuration
     database_path: str = "data/news_aggregator.db"
@@ -38,8 +38,8 @@ class Config:
     log_level: str = "INFO"
     log_file: str = "logs/app.log"
     
-    # ArXiv Configuration
-    arxiv_max_results: int = 5
+    # ArXiv Configuration (increased for expanded research coverage)
+    arxiv_max_results: int = 10
     arxiv_categories: List[str] = None
     
     # RSS Feed Configuration
@@ -65,7 +65,18 @@ class Config:
     def __post_init__(self):
         """Post-initialization validation and setup."""
         if self.arxiv_categories is None:
-            self.arxiv_categories = ["cs.AI", "cs.LG", "cs.CL", "cs.CV"]
+            # Expanded ArXiv categories for comprehensive research coverage
+            self.arxiv_categories = [
+                "cs.AI",    # Artificial Intelligence
+                "cs.LG",    # Machine Learning
+                "cs.CL",    # Computation and Language (NLP)
+                "cs.CV",    # Computer Vision
+                "cs.NE",    # Neural and Evolutionary Computing
+                "cs.RO",    # Robotics
+                "cs.IR",    # Information Retrieval
+                "cs.MA",    # Multiagent Systems
+                "stat.ML",  # Machine Learning (Statistics)
+            ]
         
         # Validate required fields
         if not self.telegram_bot_token:
@@ -93,8 +104,9 @@ def load_config() -> Config:
     if env_path.exists():
         load_dotenv(env_path)
     
-    # Parse ArXiv categories
-    arxiv_categories_str = os.getenv("ARXIV_CATEGORIES", "cs.AI,cs.LG,cs.CL,cs.CV")
+    # Parse ArXiv categories (expanded for better research coverage)
+    default_categories = "cs.AI,cs.LG,cs.CL,cs.CV,cs.NE,cs.RO,cs.IR,cs.MA,stat.ML"
+    arxiv_categories_str = os.getenv("ARXIV_CATEGORIES", default_categories)
     arxiv_categories = [cat.strip() for cat in arxiv_categories_str.split(",")]
     
     config = Config(
@@ -109,9 +121,9 @@ def load_config() -> Config:
         deepseek_api_key=os.getenv("DEEPSEEK_API_KEY"),
         deepseek_base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"),
         
-        # News Fetching Configuration
+        # News Fetching Configuration (increased for expanded sources)
         fetch_interval_minutes=int(os.getenv("FETCH_INTERVAL_MINUTES", "30")),
-        max_articles_per_run=int(os.getenv("MAX_ARTICLES_PER_RUN", "10")),
+        max_articles_per_run=int(os.getenv("MAX_ARTICLES_PER_RUN", "15")),
         
         # Database Configuration
         database_path=os.getenv("DATABASE_PATH", "data/news_aggregator.db"),
@@ -120,8 +132,8 @@ def load_config() -> Config:
         log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
         log_file=os.getenv("LOG_FILE", "logs/app.log"),
         
-        # ArXiv Configuration
-        arxiv_max_results=int(os.getenv("ARXIV_MAX_RESULTS", "5")),
+        # ArXiv Configuration (increased for better research coverage)
+        arxiv_max_results=int(os.getenv("ARXIV_MAX_RESULTS", "10")),
         arxiv_categories=arxiv_categories,
         
         # RSS Feed Configuration
@@ -150,15 +162,35 @@ def load_config() -> Config:
 
 # RSS Feed URLs for major AI news sources
 RSS_FEEDS = {
+    # Major tech news
     "TechCrunch AI": "https://techcrunch.com/category/artificial-intelligence/feed/",
     "VentureBeat AI": "https://venturebeat.com/ai/feed/",
     "MIT Technology Review AI": "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
     "Wired AI": "https://www.wired.com/tag/artificial-intelligence/feed/",
     "The Verge AI": "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
+    
+    # Research-focused sources
+    "Nature Machine Intelligence": "https://www.nature.com/natmachintell.rss",
+    "Science AI": "https://www.science.org/rss/news_current.xml",
+    "IEEE Spectrum AI": "https://spectrum.ieee.org/feeds/feed.rss",
+    "ACM TechNews": "https://technews.acm.org/news.rss",
+    
+    # Academic and research blogs
+    "AI Research Blog - Google": "https://ai.googleblog.com/feeds/posts/default",
+    "Berkeley AI Research": "https://bair.berkeley.edu/blog/feed.xml",
+    "CMU ML Blog": "https://blog.ml.cmu.edu/feed/",
+    "Stanford AI Lab": "https://ai.stanford.edu/blog/feed/",
+    
+    # AI-specific research news
+    "Papers with Code": "https://paperswithcode.com/latest",
+    "Synced AI": "https://syncedreview.com/feed/",
+    "AI Trends": "https://www.aitrends.com/feed/",
+    "Analytics India Magazine": "https://analyticsindiamag.com/feed/",
 }
 
-# Web scraping targets for official blogs
+# Web scraping targets for official blogs and research institutions
 WEB_SCRAPING_TARGETS = {
+    # Major AI Companies
     "OpenAI": {
         "url": "https://openai.com/blog/",
         "title_selector": "h3 a",
@@ -176,5 +208,57 @@ WEB_SCRAPING_TARGETS = {
         "title_selector": "h3 a",
         "link_selector": "h3 a",
         "content_selector": ".article-content"
-    }
+    },
+    "Meta AI": {
+        "url": "https://ai.meta.com/blog/",
+        "title_selector": "h3 a",
+        "link_selector": "h3 a",
+        "content_selector": ".article-content"
+    },
+    "Microsoft Research AI": {
+        "url": "https://www.microsoft.com/en-us/research/research-area/artificial-intelligence/",
+        "title_selector": "h3 a",
+        "link_selector": "h3 a",
+        "content_selector": ".entry-content"
+    },
+    
+    # Academic Institutions
+    "MIT CSAIL": {
+        "url": "https://www.csail.mit.edu/news",
+        "title_selector": ".news-title a",
+        "link_selector": ".news-title a",
+        "content_selector": ".news-content"
+    },
+    "Stanford HAI": {
+        "url": "https://hai.stanford.edu/news",
+        "title_selector": "h3 a",
+        "link_selector": "h3 a",
+        "content_selector": ".article-content"
+    },
+    "Berkeley AI Research": {
+        "url": "https://bair.berkeley.edu/blog/",
+        "title_selector": ".post-title a",
+        "link_selector": ".post-title a",
+        "content_selector": ".post-content"
+    },
+    "Carnegie Mellon AI": {
+        "url": "https://www.cs.cmu.edu/news",
+        "title_selector": "h3 a",
+        "link_selector": "h3 a",
+        "content_selector": ".news-content"
+    },
+    
+    # Research Labs
+    "Allen Institute for AI": {
+        "url": "https://allenai.org/news",
+        "title_selector": "h3 a",
+        "link_selector": "h3 a",
+        "content_selector": ".article-content"
+    },
+    "Anthropic": {
+        "url": "https://www.anthropic.com/news",
+        "title_selector": "h3 a",
+        "link_selector": "h3 a",
+        "content_selector": ".article-content"
+    },
 }

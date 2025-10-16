@@ -12,7 +12,7 @@ from typing import List, Optional
 import asyncio
 import ssl
 import aiohttp
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,10 @@ class Article:
     author: Optional[str] = None
     summary: Optional[str] = None
     tags: Optional[List[str]] = None
+    # Enhanced fields for better search and filtering
+    topics: Optional[List[str]] = None
+    keywords: Optional[List[str]] = None
+    relevance_score: float = 0.0
     
     def __post_init__(self):
         """Post-initialization validation."""
@@ -39,6 +43,10 @@ class Article:
         # Ensure tags is a list
         if self.tags is None:
             self.tags = []
+        if self.topics is None:
+            self.topics = []
+        if self.keywords is None:
+            self.keywords = []
     
     @property
     def is_valid(self) -> bool:
@@ -59,11 +67,16 @@ class NewsSource(ABC):
         self.source_name = source_name
         self.session: Optional[aiohttp.ClientSession] = None
         self.logger = logger.getChild(self.__class__.__name__)
+        self.content_analyzer = None  # Will be initialized in initialize()
     
     async def initialize(self) -> None:
         """Initialize the news source (create HTTP session, etc.)."""
         import ssl
         import certifi
+        
+        # Initialize content analyzer
+        from ..utils.content_analyzer import ContentAnalyzer
+        self.content_analyzer = ContentAnalyzer()
         
         # Create SSL context based on configuration
         ssl_verify = getattr(self.config, 'ssl_verify', True)
@@ -209,24 +222,38 @@ class NewsSource(ABC):
             return "unknown"
     
     def _is_ai_related(self, title: str, content: str) -> bool:
-        """Check if content is AI-related using keyword matching."""
-        ai_keywords = {
-            'artificial intelligence', 'machine learning', 'deep learning',
-            'neural network', 'llm', 'gpt', 'transformer', 'openai',
-            'google ai', 'deepmind', 'anthropic', 'claude', 'chatgpt',
-            'natural language processing', 'computer vision', 'nlp',
-            'reinforcement learning', 'generative ai', 'foundation model',
-            'large language model', 'diffusion', 'stable diffusion',
-            'midjourney', 'dall-e', 'robotics ai', 'autonomous',
-            'deep learning', 'convolutional', 'recurrent', 'attention',
-            'bert', 'roberta', 'llama', 'palm', 'bard', 'gemini'
-        }
+        """Check if content is AI-related using the content analyzer."""
+        if not self.content_analyzer:
+            # Fallback to basic keyword matching if analyzer not initialized
+            basic_keywords = ['artificial intelligence', 'machine learning', 'ai', 'llm', 'gpt']
+            text_lower = f"{title} {content}".lower()
+            return any(kw in text_lower for kw in basic_keywords)
         
-        text_lower = f"{title} {content}".lower()
+        analysis = self.content_analyzer.analyze_article(title, content)
+        return analysis['is_ai_related']
+    
+    def _enrich_article_metadata(self, article: Article) -> Article:
+        """
+        Enrich article with metadata using content analyzer.
+        Adds topics, keywords, and relevance score.
+        """
+        if not self.content_analyzer:
+            return article
         
-        # Check for exact keyword matches
-        for keyword in ai_keywords:
-            if keyword in text_lower:
-                return True
+        try:
+            analysis = self.content_analyzer.analyze_article(article.title, article.content)
+            
+            article.topics = analysis.get('topics', [])
+            article.keywords = analysis.get('keywords', [])
+            article.relevance_score = analysis.get('relevance_score', 0.0)
+            
+            self.logger.debug(
+                f"Enriched article '{article.title[:50]}...' with "
+                f"relevance={article.relevance_score:.1f}, "
+                f"topics={len(article.topics)}, "
+                f"keywords={len(article.keywords)}"
+            )
+        except Exception as e:
+            self.logger.warning(f"Failed to enrich article metadata: {e}")
         
-        return False
+        return article

@@ -60,6 +60,8 @@ class WebScraperSource(NewsSource):
                         link_elem, base_url, site_name, site_config
                     )
                     if article and article.is_valid:
+                        # Enrich article with metadata
+                        article = self._enrich_article_metadata(article)
                         articles.append(article)
                 except Exception as e:
                     self.logger.error(f"Error extracting article from {site_name}: {e}")
