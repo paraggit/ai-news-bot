@@ -183,6 +183,23 @@ RSS_FEEDS = {
     "MIT Technology Review AI": "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
     "Wired AI": "https://www.wired.com/tag/artificial-intelligence/feed/",
     
+    # AI Agents & Tools (HIGH PRIORITY - Agentic AI, AI Bots, AI Tools)
+    "LangChain Blog": "https://blog.langchain.dev/rss/",
+    "Anthropic Research": "https://www.anthropic.com/research/rss",
+    "Hugging Face Blog": "https://huggingface.co/blog/feed.xml",
+    "AI21 Labs Blog": "https://www.ai21.com/blog/rss.xml",
+    "Cohere AI Blog": "https://txt.cohere.com/rss/",
+    "OpenAI Research": "https://openai.com/blog/rss/",
+    "LlamaIndex Blog": "https://www.llamaindex.ai/blog/rss.xml",
+    
+    # LLM & AI Framework News
+    "Weights & Biases Blog": "https://wandb.ai/site/rss.xml",
+    "Gradient Flow": "https://gradientflow.com/feed/",
+    
+    # Model Context Protocol & AI Infrastructure
+    "The New Stack AI": "https://thenewstack.io/tag/artificial-intelligence/feed/",
+    "InfoQ AI": "https://www.infoq.com/ai-ml-data-eng/rss/",
+    
     # NOTE: TechCrunch and VentureBeat removed - too much investment/funding news
     # If needed, they can be re-added but content_analyzer will heavily filter them
 }
@@ -259,5 +276,43 @@ WEB_SCRAPING_TARGETS = {
         "title_selector": "h3 a",
         "link_selector": "h3 a",
         "content_selector": ".article-content"
+    },
+    
+    # AI Agent Frameworks & Tools
+    "LangChain": {
+        "url": "https://blog.langchain.dev/",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": ".post-content, article"
+    },
+    "LlamaIndex": {
+        "url": "https://www.llamaindex.ai/blog",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": ".article-content, article"
+    },
+    "Hugging Face": {
+        "url": "https://huggingface.co/blog",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": "article, .prose"
+    },
+    "Cohere AI": {
+        "url": "https://cohere.com/blog",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": ".article-content, article"
+    },
+    "AI21 Labs": {
+        "url": "https://www.ai21.com/blog",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": ".post-content, article"
+    },
+    "Weights & Biases": {
+        "url": "https://wandb.ai/site/articles",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": "article, .article-content"
     },
 }

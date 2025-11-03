@@ -110,6 +110,67 @@ AI_TOPIC_KEYWORDS = {
             "cross-modal", "unified model", "multi-task"
         ],
         "weight": 1.4
+    },
+    "AI Agents & Agentic AI": {
+        "keywords": [
+            "ai agent", "agentic ai", "autonomous agent", "multi-agent",
+            "agent framework", "agent system", "intelligent agent",
+            "agent-based", "agentic", "tool use", "tool calling",
+            "function calling", "agent orchestration", "agent coordination",
+            "agent architecture", "reasoning agent", "planning agent",
+            "reactive agent", "cognitive agent", "agent workflow",
+            "agent memory", "agent planning", "goal-oriented agent"
+        ],
+        "weight": 1.6
+    },
+    "AI Frameworks & Tools": {
+        "keywords": [
+            "langchain", "langgraph", "llamaindex", "haystack",
+            "semantic kernel", "autogen", "crewai", "langflow",
+            "flowise", "ai framework", "llm framework", "rag framework",
+            "ai toolkit", "ai library", "orchestration framework",
+            "prompt framework", "chain", "agent framework",
+            "ai development kit", "sdk", "api framework",
+            "vector database", "pinecone", "weaviate", "chroma",
+            "qdrant", "milvus", "faiss", "embedding database"
+        ],
+        "weight": 1.6
+    },
+    "Model Context Protocol & Integration": {
+        "keywords": [
+            "model context protocol", "mcp", "context protocol",
+            "ai integration", "model integration", "llm integration",
+            "context management", "context window", "context injection",
+            "retrieval augmented generation", "rag", "retrieval",
+            "context retrieval", "knowledge base", "external context",
+            "context extension", "long context", "context optimization",
+            "plugin", "extension", "integration layer", "middleware",
+            "api integration", "tool integration", "data connector"
+        ],
+        "weight": 1.5
+    },
+    "AI Bots & Chatbots": {
+        "keywords": [
+            "chatbot", "ai bot", "conversational ai", "virtual assistant",
+            "chat interface", "dialogue system", "chat application",
+            "bot framework", "telegram bot", "discord bot", "slack bot",
+            "whatsapp bot", "messenger bot", "voice assistant",
+            "conversational interface", "chat engine", "bot platform",
+            "customer service bot", "support bot", "assistant bot"
+        ],
+        "weight": 1.4
+    },
+    "AI Development & MLOps": {
+        "keywords": [
+            "mlops", "ai ops", "model deployment", "model serving",
+            "model training", "fine-tuning", "model optimization",
+            "quantization", "pruning", "distillation", "compression",
+            "inference optimization", "model monitoring", "experiment tracking",
+            "mlflow", "wandb", "weights and biases", "tensorboard",
+            "model versioning", "model registry", "continuous training",
+            "pipeline", "workflow automation", "orchestration"
+        ],
+        "weight": 1.3
     }
 }
 
@@ -118,7 +179,8 @@ AI_TOPIC_KEYWORDS = {
 HIGH_VALUE_KEYWORDS = {
     "breakthrough", "revolutionary", "novel", "state-of-the-art", "sota",
     "benchmark", "outperform", "significant", "advancement", "innovation",
-    "introduces", "proposes", "demonstrates", "achieves", "improves"
+    "introduces", "proposes", "demonstrates", "achieves", "improves",
+    "agent-based", "agentic", "autonomous", "orchestration", "framework"
 }
 
 # Research-specific keywords for boosting academic content
@@ -129,7 +191,9 @@ RESEARCH_KEYWORDS = {
     "theoretical", "algorithm", "framework", "approach", "method",
     "peer-reviewed", "citation", "authors", "abstract", "conclusion",
     "hypothesis", "validate", "reproduce", "ablation", "baseline",
-    "neurips", "icml", "iclr", "cvpr", "acl", "emnlp", "aaai", "ijcai"
+    "neurips", "icml", "iclr", "cvpr", "acl", "emnlp", "aaai", "ijcai",
+    "agent system", "multi-agent", "agent architecture", "tool use",
+    "context protocol", "retrieval augmented", "rag system", "prompt engineering"
 }
 
 # Breakthrough and invention keywords - highly prioritized
