@@ -37,7 +37,16 @@ class ArXivSource(NewsSource):
                 self.logger.error(f"Error fetching from arXiv category {category}: {e}")
         
         # Sort by publication date (newest first) and limit results
-        all_papers.sort(key=lambda x: x.published_date or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+        # Ensure all datetimes are timezone-aware for comparison
+        def get_sort_key(article):
+            if article.published_date is None:
+                return datetime.min.replace(tzinfo=timezone.utc)
+            # If the datetime is naive, assume UTC
+            if article.published_date.tzinfo is None:
+                return article.published_date.replace(tzinfo=timezone.utc)
+            return article.published_date
+        
+        all_papers.sort(key=get_sort_key, reverse=True)
         
         return all_papers[:self.max_results]
     
