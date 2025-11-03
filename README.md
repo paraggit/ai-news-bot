@@ -1,3 +1,7 @@
+![GxhVae5XsAcI4zJ](https://github.com/user-attachments/assets/1cf8d0f1-c3d1-493d-835e-9e78cd0200e7)
+
+**[TELEGRAM Link: AI_NEWS_HUB_3310](https://t.me/ai_news_hub_3310)**
+
 ## 🔧 Raspberry Pi Optimization
 
 ### **Automated Setup Script**
