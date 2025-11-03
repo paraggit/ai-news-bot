@@ -160,32 +160,31 @@ def load_config() -> Config:
     return config
 
 
-# RSS Feed URLs for major AI news sources
+# RSS Feed URLs for AI news sources - FOCUSED ON RESEARCH BREAKTHROUGHS
+# NOTE: Prioritizing research-focused sources over business/investment news
 RSS_FEEDS = {
-    # Major tech news
-    "TechCrunch AI": "https://techcrunch.com/category/artificial-intelligence/feed/",
-    "VentureBeat AI": "https://venturebeat.com/ai/feed/",
-    "MIT Technology Review AI": "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
-    "Wired AI": "https://www.wired.com/tag/artificial-intelligence/feed/",
-    "The Verge AI": "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
-    
-    # Research-focused sources
+    # Research-focused sources (HIGH PRIORITY - actual research breakthroughs)
     "Nature Machine Intelligence": "https://www.nature.com/natmachintell.rss",
     "Science AI": "https://www.science.org/rss/news_current.xml",
     "IEEE Spectrum AI": "https://spectrum.ieee.org/feeds/feed.rss",
     "ACM TechNews": "https://technews.acm.org/news.rss",
     
-    # Academic and research blogs
+    # Academic and research blogs (HIGH PRIORITY)
     "AI Research Blog - Google": "https://ai.googleblog.com/feeds/posts/default",
     "Berkeley AI Research": "https://bair.berkeley.edu/blog/feed.xml",
     "CMU ML Blog": "https://blog.ml.cmu.edu/feed/",
     "Stanford AI Lab": "https://ai.stanford.edu/blog/feed/",
     
-    # AI-specific research news
+    # AI-specific research news (HIGH PRIORITY)
     "Papers with Code": "https://paperswithcode.com/latest",
     "Synced AI": "https://syncedreview.com/feed/",
-    "AI Trends": "https://www.aitrends.com/feed/",
-    "Analytics India Magazine": "https://analyticsindiamag.com/feed/",
+    
+    # Tech news with research focus (MEDIUM PRIORITY - filtered for research)
+    "MIT Technology Review AI": "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
+    "Wired AI": "https://www.wired.com/tag/artificial-intelligence/feed/",
+    
+    # NOTE: TechCrunch and VentureBeat removed - too much investment/funding news
+    # If needed, they can be re-added but content_analyzer will heavily filter them
 }
 
 # Web scraping targets for official blogs and research institutions

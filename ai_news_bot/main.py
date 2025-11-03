@@ -72,6 +72,35 @@ class AINewsAggregator:
             
             self.logger.info(f"Found {len(new_articles)} new articles to process")
             
+            # Filter articles based on new criteria: focus on research, filter investment news
+            filtered_articles = []
+            for article in new_articles:
+                # Skip articles with very low relevance score
+                if article.relevance_score < 35:
+                    self.logger.debug(f"Filtered out low relevance article: {article.title[:50]}... (score: {article.relevance_score})")
+                    continue
+                
+                # Filter out investment news (unless it's also a breakthrough)
+                # This check should already be done by ContentAnalyzer, but double-check here
+                text_lower = f"{article.title} {article.content}".lower()
+                has_investment_keywords = any(kw in text_lower for kw in [
+                    "funding round", "raised $", "investment", "series a", "series b", 
+                    "valuation", "acquisition", "acquired"
+                ])
+                has_breakthrough_keywords = any(kw in text_lower for kw in [
+                    "breakthrough", "discovery", "novel", "first-time", "unprecedented",
+                    "research", "paper", "arxiv"
+                ])
+                
+                if has_investment_keywords and not has_breakthrough_keywords:
+                    self.logger.info(f"Filtered out investment news: {article.title[:50]}...")
+                    continue
+                
+                filtered_articles.append(article)
+            
+            new_articles = filtered_articles
+            self.logger.info(f"After relevance and investment filtering: {len(new_articles)} articles")
+            
             # Remove duplicates based on title similarity
             from .utils import ArticleFilter
             article_filter = ArticleFilter()
@@ -90,7 +119,7 @@ class AINewsAggregator:
             # Remove duplicates
             unique_articles = article_filter.remove_duplicates(article_dicts, similarity_threshold=0.8)
             
-            # Rank by quality
+            # Rank by quality (research breakthroughs will naturally rank higher)
             ranked_articles = article_filter.rank_by_quality(unique_articles)
             
             # Extract Article objects
@@ -168,12 +197,29 @@ class AINewsAggregator:
             "DeepSeek": "🔍",
             "Perplexity": "💡",
             "ArXiv": "📚",
-            "TechCrunch": "📰",
-            "VentureBeat": "💼",
+            "Nature Machine Intelligence": "🔬",
+            "Science AI": "🔬",
+            "Berkeley AI Research": "🎓",
+            "CMU ML Blog": "🎓",
+            "Stanford AI Lab": "🎓",
+            "Papers with Code": "📊",
             "AI News": "🤖"
         }.get(article.source, "🔗")
         
-        message = f"""🚀 **AI News Alert** {source_emoji}
+        # Check if this is a research breakthrough
+        text_lower = f"{article.title} {article.content}".lower()
+        is_breakthrough = any(kw in text_lower for kw in [
+            "breakthrough", "discovery", "novel", "first-time", "unprecedented",
+            "groundbreaking", "revolutionary"
+        ])
+        
+        # Add special indicator for breakthroughs
+        header = "🚀 **AI Research Breakthrough** 🔥" if is_breakthrough else "🚀 **AI Research Update**"
+        
+        # Add relevance score badge if high
+        score_badge = f" ⭐ Score: {article.relevance_score:.0f}/100" if article.relevance_score >= 70 else ""
+        
+        message = f"""{header} {source_emoji}{score_badge}
 
 **{article.title}**
 
@@ -183,7 +229,7 @@ class AINewsAggregator:
 🔗 **Source:** {article.source}
 📰 **Read More:** {article.url}
 
-#{article.source.replace(' ', '').replace('.', '')} #AI #MachineLearning #Tech"""
+#{article.source.replace(' ', '').replace('.', '')} #AIResearch #MachineLearning #Innovation"""
         
         return message
 

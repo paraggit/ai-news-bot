@@ -2,6 +2,32 @@
 
 **[TELEGRAM Link: AI_NEWS_HUB_3310](https://t.me/ai_news_hub_3310)**
 
+## 🎯 NEW: Research-Focused Filtering (Updated Nov 2025)
+
+The bot now **focuses on research breakthroughs and technical innovations** while **filtering out investment news** and funding announcements! 
+
+**What's New:**
+- ✅ Prioritizes research breakthroughs, discoveries, and novel inventions
+- ❌ Filters out funding rounds, acquisitions, and business deals
+- 🔥 Special indicators for breakthrough articles
+- 🎓 Focus on academic and research sources (ArXiv, Nature, IEEE, university labs)
+- ⭐ Quality scores shown for high-relevance articles
+
+**Quick Start:**
+```bash
+# Test the new filtering system
+python3 test_filtering_simple.py
+
+# See what gets posted vs filtered
+# ✅ Research breakthroughs: POSTED
+# ❌ Investment news: FILTERED
+```
+
+**Documentation:**
+- 📖 **[Quick Start Guide](QUICK_START_FILTERING.md)** - How to use the new filtering
+- 📖 **[Detailed Changes](FILTERING_IMPROVEMENTS.md)** - Complete technical documentation
+- 📖 **[Changes Summary](CHANGES_FILTERING_UPDATE.md)** - Summary of all modifications
+
 ## 🔧 Raspberry Pi Optimization
 
 ### **Automated Setup Script**

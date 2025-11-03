@@ -132,6 +132,40 @@ RESEARCH_KEYWORDS = {
     "neurips", "icml", "iclr", "cvpr", "acl", "emnlp", "aaai", "ijcai"
 }
 
+# Breakthrough and invention keywords - highly prioritized
+BREAKTHROUGH_KEYWORDS = {
+    "breakthrough", "discovery", "discovered", "invention", "invented",
+    "novel", "first-time", "first time", "unprecedented", "revolutionary",
+    "groundbreaking", "milestone", "significant advancement", "major advancement",
+    "new method", "new approach", "new technique", "new algorithm",
+    "outperforms", "state-of-the-art", "sota", "record-breaking",
+    "achieves", "demonstrates", "proposes", "introduces", "presents",
+    "pioneering", "innovative", "innovation", "cutting-edge",
+    "transformative", "game-changing", "paradigm shift"
+}
+
+# Investment and business keywords - to be filtered out
+INVESTMENT_KEYWORDS = {
+    "funding", "investment", "invested", "funding round", "series a", "series b",
+    "series c", "venture capital", "vc", "raised", "valuation", "investor",
+    "acquisition", "acquired", "merger", "bought", "purchase", "deal",
+    "partnership", "partners with", "collaboration announcement",
+    "ipo", "stock", "market cap", "shareholders", "equity",
+    "billion dollar", "million dollar", "$", "raises $", "valued at",
+    "seed funding", "angel investor", "startup funding",
+    "financial", "revenue", "profit", "earnings", "quarterly",
+    "ceo appointed", "executive", "leadership change", "hire",
+    "layoff", "workforce reduction", "restructuring"
+}
+
+# Product launch keywords (filter unless accompanied by research/breakthrough)
+PRODUCT_LAUNCH_KEYWORDS = {
+    "product launch", "launching", "releases", "released", "unveiled",
+    "announces", "announcement", "available now", "coming soon",
+    "price", "pricing", "subscription", "premium", "pro version",
+    "beta", "early access", "sign up", "waitlist"
+}
+
 
 class ContentAnalyzer:
     """Analyzes article content for AI relevance, topics, and keywords."""
@@ -147,6 +181,9 @@ class ContentAnalyzer:
         
         # Include research keywords for comprehensive coverage
         self.research_keywords = RESEARCH_KEYWORDS
+        self.breakthrough_keywords = BREAKTHROUGH_KEYWORDS
+        self.investment_keywords = INVESTMENT_KEYWORDS
+        self.product_launch_keywords = PRODUCT_LAUNCH_KEYWORDS
     
     def analyze_article(self, title: str, content: str) -> Dict:
         """
@@ -157,11 +194,29 @@ class ContentAnalyzer:
         - topics: list of identified topics
         - keywords: list of extracted keywords
         - is_ai_related: bool
+        - is_research_breakthrough: bool
+        - is_investment_news: bool
         """
         text_lower = f"{title} {content}".lower()
         
-        # Calculate relevance score
+        # Check if this is investment/business news (should be filtered)
+        is_investment_news = self._is_investment_news(title, content, text_lower)
+        
+        # Check if this is a research breakthrough
+        is_research_breakthrough = self._is_research_breakthrough(text_lower)
+        
+        # Calculate relevance score (will be heavily penalized if investment news)
         relevance_score = self._calculate_relevance_score(title, content, text_lower)
+        
+        # Apply penalty for investment news without technical content
+        if is_investment_news and not is_research_breakthrough:
+            relevance_score = max(0, relevance_score - 50)  # Heavy penalty
+            self.logger.debug(f"Article flagged as investment news: '{title[:50]}...'")
+        
+        # Boost for research breakthroughs
+        if is_research_breakthrough:
+            relevance_score = min(100, relevance_score + 15)  # Significant boost
+            self.logger.debug(f"Article boosted as research breakthrough: '{title[:50]}...'")
         
         # Identify topics
         topics = self._identify_topics(text_lower)
@@ -169,15 +224,69 @@ class ContentAnalyzer:
         # Extract keywords
         keywords = self._extract_keywords(title, content, text_lower)
         
-        # Determine if content is AI-related
-        is_ai_related = relevance_score >= 30 or len(topics) > 0
+        # Determine if content is AI-related and not just business news
+        is_ai_related = (relevance_score >= 30 or len(topics) > 0) and not (is_investment_news and not is_research_breakthrough)
         
         return {
             "relevance_score": round(relevance_score, 2),
             "topics": topics,
             "keywords": keywords,
-            "is_ai_related": is_ai_related
+            "is_ai_related": is_ai_related,
+            "is_research_breakthrough": is_research_breakthrough,
+            "is_investment_news": is_investment_news
         }
+    
+    def _is_investment_news(self, title: str, content: str, text_lower: str) -> bool:
+        """
+        Check if article is primarily about investments, funding, or business deals.
+        Returns True if article is investment news without substantial technical content.
+        """
+        title_lower = title.lower()
+        
+        # Count investment keywords in title and content
+        title_investment_matches = sum(1 for kw in self.investment_keywords if kw in title_lower)
+        content_investment_matches = sum(1 for kw in self.investment_keywords if kw in text_lower)
+        
+        # Count product launch keywords
+        product_launch_matches = sum(1 for kw in self.product_launch_keywords if kw in text_lower)
+        
+        # If title contains investment keywords, it's likely investment news
+        if title_investment_matches >= 2:
+            return True
+        
+        # If content heavily focuses on investment (more than 5 matches), likely investment news
+        if content_investment_matches >= 5:
+            return True
+        
+        # If both investment and product launch keywords present, likely not research
+        if content_investment_matches >= 2 and product_launch_matches >= 2:
+            return True
+        
+        return False
+    
+    def _is_research_breakthrough(self, text_lower: str) -> bool:
+        """
+        Check if article describes a research breakthrough or new invention.
+        Returns True if article contains significant breakthrough indicators.
+        """
+        # Count breakthrough keywords
+        breakthrough_matches = sum(1 for kw in self.breakthrough_keywords if kw in text_lower)
+        
+        # Count research keywords
+        research_matches = sum(1 for kw in self.research_keywords if kw in text_lower)
+        
+        # Strong indicators: multiple breakthrough keywords OR breakthrough + research
+        if breakthrough_matches >= 2:
+            return True
+        
+        if breakthrough_matches >= 1 and research_matches >= 3:
+            return True
+        
+        # ArXiv papers are generally research breakthroughs
+        if "arxiv" in text_lower and research_matches >= 2:
+            return True
+        
+        return False
     
     def _calculate_relevance_score(self, title: str, content: str, text_lower: str) -> float:
         """
@@ -189,6 +298,8 @@ class ContentAnalyzer:
         - Topic category matches
         - High-value keyword presence
         - Density of AI terms
+        - Breakthrough keyword bonus
+        - Research keyword bonus
         """
         score = 0.0
         title_lower = title.lower()
@@ -243,6 +354,13 @@ class ContentAnalyzer:
             if "arxiv" in text_lower or "published" in text_lower:
                 score += 5
         
+        # Score 7: Breakthrough keywords (up to 15 points) - MAJOR boost
+        breakthrough_matches = sum(1 for kw in self.breakthrough_keywords if kw in text_lower)
+        if breakthrough_matches > 0:
+            breakthrough_boost = min(breakthrough_matches * 3, 15)
+            score += breakthrough_boost
+            self.logger.debug(f"Breakthrough boost: +{breakthrough_boost} points")
+        
         return min(score, 100.0)
     
     def _identify_topics(self, text_lower: str) -> List[str]:
@@ -274,6 +392,11 @@ class ContentAnalyzer:
         
         # Add research keywords (prioritize research content)
         for keyword in self.research_keywords:
+            if keyword in text_lower:
+                found_keywords.add(keyword)
+        
+        # Add breakthrough keywords (highest priority)
+        for keyword in self.breakthrough_keywords:
             if keyword in text_lower:
                 found_keywords.add(keyword)
         
