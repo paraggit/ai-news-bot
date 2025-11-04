@@ -11,6 +11,7 @@ from .base import NewsSource
 from .rss_feeds import RSSFeedSource
 from .arxiv import ArXivSource
 from .web_scraper import WebScraperSource
+from .perplexity_search import PerplexitySearchSource
 
 
 def get_all_news_sources(config: Config) -> List[NewsSource]:
@@ -26,6 +27,10 @@ def get_all_news_sources(config: Config) -> List[NewsSource]:
     # Add web scraper sources
     sources.append(WebScraperSource(config))
     
+    # Add Perplexity Search source (if API key is configured)
+    if config.perplexity_api_key:
+        sources.append(PerplexitySearchSource(config))
+    
     return sources
 
 
@@ -34,5 +39,6 @@ __all__ = [
     "RSSFeedSource", 
     "ArXivSource",
     "WebScraperSource",
+    "PerplexitySearchSource",
     "get_all_news_sources"
 ]

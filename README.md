@@ -2,30 +2,41 @@
 
 **[TELEGRAM Link: AI_NEWS_HUB_3310](https://t.me/ai_news_hub_3310)**
 
-## 🎯 NEW: Agentic AI & AI Tools Coverage (Nov 2025)
+## 🎯 NEW: Perplexity Search API Integration (Nov 2025)
 
-The bot now **comprehensively tracks Agentic AI, AI agents, AI tools, and frameworks** including LangChain, LangGraph, Model Context Protocol (MCP), and more!
+The bot now uses **Perplexity AI's Search API** to actively search the web for the latest AI research! 🔍
 
-**What's New:**
-- ✅ 11 new RSS feeds covering LangChain, Anthropic, Hugging Face, LlamaIndex, etc.
-- ✅ 5 new topic categories: Agentic AI, AI Frameworks, MCP, AI Bots, MLOps
-- ✅ 280+ keywords for better detection (up from ~100)
-- ✅ Prioritizes agent systems, tool use, and framework updates
-- ✅ Research papers on multi-agent systems and agent architectures
+**Why This is Game-Changing:**
+- 🌐 **Searches Entire Web**: Finds research from ANY source, not just RSS feeds
+- 🎯 **Customizable Queries**: Search for exactly what you want to track
+- 🔄 **Real-time Discovery**: Gets the most recent content (last 30 days)
+- 🤖 **AI-Powered**: Perplexity's AI curates and summarizes findings
+- 📊 **Comprehensive Coverage**: Discovers content you'd never find otherwise
 
 **Quick Start:**
 ```bash
-# Test the new Agentic AI sources
-poetry run python test_agentic_ai_sources.py
+# 1. Get API key from https://www.perplexity.ai/
+# 2. Add to .env:
+echo "PERPLEXITY_API_KEY=pplx-your-key-here" >> .env
 
-# Run the bot (automatically uses new sources)
+# 3. Run the bot (Perplexity auto-enabled)
 poetry run python -m ai_news_bot.main
 ```
 
 **Documentation:**
-- 📖 **[Agentic AI Guide](AGENTIC_AI_SOURCES.md)** - Complete documentation
-- 📖 **[Quick Reference](QUICK_REFERENCE_AGENTIC_AI.md)** - Daily reference card
-- 📖 **[Changes Summary](CHANGES_AGENTIC_AI.md)** - Technical details
+- 📖 **[Setup Guide](PERPLEXITY_SEARCH_SETUP.md)** - Complete integration guide
+- 📖 **[Example Config](PERPLEXITY_ENV_EXAMPLE.txt)** - Quick configuration example
+
+## 🎯 Agentic AI & AI Tools Coverage (Nov 2025)
+
+The bot now **comprehensively tracks Agentic AI, AI agents, AI tools, and frameworks** including LangChain, LangGraph, Model Context Protocol (MCP), and more!
+
+**What's Covered:**
+- ✅ 24 RSS feeds covering LangChain, Anthropic, Hugging Face, LlamaIndex, Perplexity, etc.
+- ✅ 5 new topic categories: Agentic AI, AI Frameworks, MCP, AI Bots, MLOps
+- ✅ 280+ keywords for better detection (up from ~100)
+- ✅ Prioritizes agent systems, tool use, and framework updates
+- ✅ Research papers on multi-agent systems and agent architectures
 
 ## 🎯 Research-Focused Filtering (Nov 2025)
 

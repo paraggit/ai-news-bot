@@ -42,6 +42,12 @@ class Config:
     arxiv_max_results: int = 10
     arxiv_categories: List[str] = None
     
+    # Perplexity Search API Configuration
+    perplexity_api_key: Optional[str] = None
+    perplexity_model: str = "llama-3.1-sonar-small-128k-online"
+    perplexity_max_results: int = 5
+    perplexity_search_queries: List[str] = None
+    
     # RSS Feed Configuration
     rss_feed_interval: int = 15
     
@@ -78,6 +84,19 @@ class Config:
                 "stat.ML",  # Machine Learning (Statistics)
             ]
         
+        if self.perplexity_search_queries is None:
+            # Default search queries for latest AI research
+            self.perplexity_search_queries = [
+                "latest AI research papers and breakthroughs",
+                "agentic AI and autonomous agents recent developments",
+                "LangChain LangGraph updates and new features",
+                "Model Context Protocol MCP AI integration",
+                "large language models LLM research advances",
+                "AI agents tool use and function calling",
+                "retrieval augmented generation RAG systems",
+                "multimodal AI vision language models",
+            ]
+        
         # Validate required fields
         if not self.telegram_bot_token:
             raise ValueError("TELEGRAM_BOT_TOKEN is required")
@@ -109,6 +128,12 @@ def load_config() -> Config:
     arxiv_categories_str = os.getenv("ARXIV_CATEGORIES", default_categories)
     arxiv_categories = [cat.strip() for cat in arxiv_categories_str.split(",")]
     
+    # Parse Perplexity search queries
+    perplexity_queries_str = os.getenv("PERPLEXITY_SEARCH_QUERIES", "")
+    perplexity_queries = None
+    if perplexity_queries_str:
+        perplexity_queries = [q.strip() for q in perplexity_queries_str.split("|")]
+    
     config = Config(
         # Telegram Configuration
         telegram_bot_token=os.getenv("TELEGRAM_BOT_TOKEN", ""),
@@ -135,6 +160,12 @@ def load_config() -> Config:
         # ArXiv Configuration (increased for better research coverage)
         arxiv_max_results=int(os.getenv("ARXIV_MAX_RESULTS", "10")),
         arxiv_categories=arxiv_categories,
+        
+        # Perplexity Search API Configuration
+        perplexity_api_key=os.getenv("PERPLEXITY_API_KEY"),
+        perplexity_model=os.getenv("PERPLEXITY_MODEL", "llama-3.1-sonar-small-128k-online"),
+        perplexity_max_results=int(os.getenv("PERPLEXITY_MAX_RESULTS", "5")),
+        perplexity_search_queries=perplexity_queries,
         
         # RSS Feed Configuration
         rss_feed_interval=int(os.getenv("RSS_FEED_INTERVAL", "15")),
@@ -191,6 +222,7 @@ RSS_FEEDS = {
     "Cohere AI Blog": "https://txt.cohere.com/rss/",
     "OpenAI Research": "https://openai.com/blog/rss/",
     "LlamaIndex Blog": "https://www.llamaindex.ai/blog/rss.xml",
+    "Perplexity AI Blog": "https://www.perplexity.ai/hub/blog/rss",
     
     # LLM & AI Framework News
     "Weights & Biases Blog": "https://wandb.ai/site/rss.xml",
@@ -314,5 +346,11 @@ WEB_SCRAPING_TARGETS = {
         "title_selector": "h2 a, h3 a",
         "link_selector": "h2 a, h3 a",
         "content_selector": "article, .article-content"
+    },
+    "Perplexity AI": {
+        "url": "https://www.perplexity.ai/hub/blog",
+        "title_selector": "h2 a, h3 a, .post-title a",
+        "link_selector": "h2 a, h3 a, .post-title a",
+        "content_selector": "article, .post-content, .article-content"
     },
 }

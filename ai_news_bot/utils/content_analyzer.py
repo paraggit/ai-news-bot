@@ -98,6 +98,7 @@ AI_TOPIC_KEYWORDS = {
         "keywords": [
             "openai", "google ai", "deepmind", "anthropic", "meta ai",
             "microsoft ai", "amazon ai", "nvidia", "hugging face",
+            "perplexity ai", "perplexity",
             "startup", "funding", "investment", "acquisition",
             "partnership", "product launch", "announcement"
         ],
