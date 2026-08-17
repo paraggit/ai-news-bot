@@ -62,6 +62,19 @@ class Config:
     local_model_load_in_8bit: bool = False
     local_model_load_in_4bit: bool = False
     
+    # Anthropic/Claude Configuration
+    anthropic_api_key: Optional[str] = None
+    anthropic_model: str = "claude-sonnet-4-20250514"
+
+    # Digest Configuration
+    digest_enabled: bool = False
+    digest_schedule_hour: int = 8
+    digest_period_hours: int = 24
+    digest_max_articles: int = 15
+
+    # Concurrency Configuration
+    max_concurrent_sources: int = 4
+
     # Network Configuration
     ssl_verify: bool = True
     http_timeout: int = 30
@@ -107,12 +120,15 @@ class Config:
         # Validate summarizer configuration
         if self.summarizer_type == "openai" and not self.openai_api_key:
             raise ValueError("OPENAI_API_KEY is required when using OpenAI summarizer")
-        
+
         if self.summarizer_type == "deepseek" and not self.deepseek_api_key:
             raise ValueError("DEEPSEEK_API_KEY is required when using DeepSeek summarizer")
-        
-        if self.summarizer_type not in ["openai", "deepseek", "local"]:
-            raise ValueError("SUMMARIZER_TYPE must be 'openai', 'deepseek', or 'local'")
+
+        if self.summarizer_type == "anthropic" and not self.anthropic_api_key:
+            raise ValueError("ANTHROPIC_API_KEY is required when using Anthropic summarizer")
+
+        if self.summarizer_type not in ["openai", "deepseek", "local", "anthropic"]:
+            raise ValueError("SUMMARIZER_TYPE must be 'openai', 'deepseek', 'local', or 'anthropic'")
 
 
 def load_config() -> Config:
@@ -181,6 +197,19 @@ def load_config() -> Config:
         local_model_load_in_8bit=os.getenv("LOCAL_MODEL_LOAD_IN_8BIT", "false").lower() == "true",
         local_model_load_in_4bit=os.getenv("LOCAL_MODEL_LOAD_IN_4BIT", "false").lower() == "true",
         
+        # Anthropic/Claude Configuration
+        anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
+        anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+
+        # Digest Configuration
+        digest_enabled=os.getenv("DIGEST_ENABLED", "false").lower() == "true",
+        digest_schedule_hour=int(os.getenv("DIGEST_SCHEDULE_HOUR", "8")),
+        digest_period_hours=int(os.getenv("DIGEST_PERIOD_HOURS", "24")),
+        digest_max_articles=int(os.getenv("DIGEST_MAX_ARTICLES", "15")),
+
+        # Concurrency Configuration
+        max_concurrent_sources=int(os.getenv("MAX_CONCURRENT_SOURCES", "4")),
+
         # Network Configuration
         ssl_verify=os.getenv("SSL_VERIFY", "true").lower() == "true",
         http_timeout=int(os.getenv("HTTP_TIMEOUT", "30")),

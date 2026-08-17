@@ -21,6 +21,13 @@ class DatabaseManager:
         """Initialize database manager with given database path."""
         self.database_path = database_path
         self.db: Optional[aiosqlite.Connection] = None
+
+    async def __aenter__(self) -> "DatabaseManager":
+        await self.initialize()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        await self.close()
         
     async def initialize(self) -> None:
         """Initialize the database and create tables if they don't exist."""
@@ -555,6 +562,39 @@ class DatabaseManager:
         sorted_topics = dict(sorted(topic_counts.items(), key=lambda x: x[1], reverse=True))
         return sorted_topics
     
+    async def get_digest_articles(
+        self, hours: int = 24, limit: int = 15
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """Get articles grouped by topic for digest generation."""
+        if not self.db:
+            raise RuntimeError("Database not initialized")
+
+        cutoff = datetime.now() - timedelta(hours=hours)
+        cursor = await self.db.execute("""
+            SELECT id, url, title, source, summary, topics,
+                   relevance_score, processed_at
+            FROM articles
+            WHERE processed_at >= ?
+            ORDER BY relevance_score DESC
+            LIMIT ?
+        """, (cutoff, limit))
+
+        rows = await cursor.fetchall()
+        await cursor.close()
+
+        grouped: Dict[str, List[Dict[str, Any]]] = {}
+        for row in rows:
+            article = {
+                "id": row[0], "url": row[1], "title": row[2],
+                "source": row[3], "summary": row[4],
+                "topics": row[5].split(',') if row[5] else ["General AI"],
+                "relevance_score": row[6], "processed_at": row[7],
+            }
+            primary_topic = article["topics"][0] if article["topics"] else "General AI"
+            grouped.setdefault(primary_topic, []).append(article)
+
+        return grouped
+
     async def close(self) -> None:
         """Close the database connection."""
         if self.db:
