@@ -84,7 +84,6 @@ class Config:
     def __post_init__(self):
         """Post-initialization validation and setup."""
         if self.arxiv_categories is None:
-            # Expanded ArXiv categories for comprehensive research coverage
             self.arxiv_categories = [
                 "cs.AI",    # Artificial Intelligence
                 "cs.LG",    # Machine Learning
@@ -94,6 +93,10 @@ class Config:
                 "cs.RO",    # Robotics
                 "cs.IR",    # Information Retrieval
                 "cs.MA",    # Multiagent Systems
+                "cs.HC",    # Human-Computer Interaction (AI interfaces)
+                "cs.CR",    # Cryptography & Security (AI safety)
+                "cs.SD",    # Sound (speech/audio AI)
+                "eess.AS",  # Audio and Speech Processing
                 "stat.ML",  # Machine Learning (Statistics)
             ]
         
@@ -223,163 +226,224 @@ def load_config() -> Config:
 # RSS Feed URLs for AI news sources - FOCUSED ON RESEARCH BREAKTHROUGHS
 # NOTE: Prioritizing research-focused sources over business/investment news
 RSS_FEEDS = {
-    # Research-focused sources (HIGH PRIORITY - actual research breakthroughs)
+    # ── Journals & Academic Publishers (HIGHEST PRIORITY) ─────────────
     "Nature Machine Intelligence": "https://www.nature.com/natmachintell.rss",
+    "Nature Computational Science": "https://www.nature.com/natcomputsci.rss",
     "Science AI": "https://www.science.org/rss/news_current.xml",
     "IEEE Spectrum AI": "https://spectrum.ieee.org/feeds/feed.rss",
     "ACM TechNews": "https://technews.acm.org/news.rss",
-    
-    # Academic and research blogs (HIGH PRIORITY)
-    "AI Research Blog - Google": "https://ai.googleblog.com/feeds/posts/default",
+    "JMLR Papers": "https://jmlr.org/jmlr.xml",
+    "Distill.pub": "https://distill.pub/rss.xml",
+    "Transactions on ML Research": "https://jmlr.org/tmlr/tmlr.xml",
+
+    # ── University & Research Lab Blogs (HIGH PRIORITY) ───────────────
+    "Google AI Blog": "https://ai.googleblog.com/feeds/posts/default",
     "Berkeley AI Research": "https://bair.berkeley.edu/blog/feed.xml",
     "CMU ML Blog": "https://blog.ml.cmu.edu/feed/",
     "Stanford AI Lab": "https://ai.stanford.edu/blog/feed/",
-    
-    # AI-specific research news (HIGH PRIORITY)
+    "MIT CSAIL News": "https://www.csail.mit.edu/news/rss",
+    "Stanford HAI": "https://hai.stanford.edu/news/rss.xml",
+    "Princeton NLP": "https://princeton-nlp.github.io/feed.xml",
+    "ETH Zurich AI Center": "https://ai.ethz.ch/news/feed.xml",
+    "Mila Quebec AI": "https://mila.quebec/en/blog/feed/",
+    "Max Planck IS": "https://is.mpg.de/news_feed",
+    "Toronto ML Group": "https://www.cs.toronto.edu/~hinton/nntut/feed.xml",
+
+    # ── AI Research Aggregators & Trackers (HIGH PRIORITY) ────────────
     "Papers with Code": "https://paperswithcode.com/latest",
     "Synced AI": "https://syncedreview.com/feed/",
-    
-    # Tech news with research focus (MEDIUM PRIORITY - filtered for research)
-    "MIT Technology Review AI": "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
-    "Wired AI": "https://www.wired.com/tag/artificial-intelligence/feed/",
-    
-    # AI Agents & Tools (HIGH PRIORITY - Agentic AI, AI Bots, AI Tools)
-    "LangChain Blog": "https://blog.langchain.dev/rss/",
+    "The Batch (deeplearning.ai)": "https://www.deeplearning.ai/the-batch/feed/",
+    "Ahead of AI (Sebastian Raschka)": "https://magazine.sebastianraschka.com/feed",
+    "Import AI Newsletter": "https://importai.substack.com/feed",
+    "The Gradient": "https://thegradient.pub/rss/",
+    "AI Alignment Forum": "https://www.alignmentforum.org/feed.xml?view=community-rss",
+    "ML Safety Newsletter": "https://newsletter.mlsafety.org/feed",
+    "Interconnects (Nathan Lambert)": "https://www.interconnects.ai/feed",
+
+    # ── AI Safety & Alignment Research (HIGH PRIORITY) ────────────────
     "Anthropic Research": "https://www.anthropic.com/research/rss",
-    "Hugging Face Blog": "https://huggingface.co/blog/feed.xml",
-    "AI21 Labs Blog": "https://www.ai21.com/blog/rss.xml",
-    "Cohere AI Blog": "https://txt.cohere.com/rss/",
+    "DeepMind Safety Research": "https://deepmindsafetyresearch.medium.com/feed",
+    "Center for AI Safety": "https://www.safe.ai/blog/rss.xml",
+    "ARC Evals": "https://evals.alignment.org/blog/rss.xml",
+    "MIRI Research": "https://intelligence.org/feed/",
+
+    # ── AI Company Research Blogs (HIGH PRIORITY) ─────────────────────
     "OpenAI Research": "https://openai.com/blog/rss/",
+    "Hugging Face Blog": "https://huggingface.co/blog/feed.xml",
+    "Meta AI Research": "https://ai.meta.com/blog/rss/",
+    "Microsoft Research AI": "https://www.microsoft.com/en-us/research/feed/",
+    "NVIDIA AI Research": "https://blogs.nvidia.com/feed/",
+    "Apple ML Research": "https://machinelearning.apple.com/rss.xml",
+    "Amazon Science": "https://www.amazon.science/index.rss",
+    "Salesforce AI Research": "https://blog.salesforceairesearch.com/rss/",
+    "EleutherAI Blog": "https://blog.eleuther.ai/rss/",
+    "Stability AI Blog": "https://stability.ai/blog/rss.xml",
+    "Mistral AI Blog": "https://mistral.ai/feed.xml",
+    "Together AI Blog": "https://www.together.ai/blog/rss.xml",
+
+    # ── AI Agents, Frameworks & Tools (HIGH PRIORITY) ─────────────────
+    "LangChain Blog": "https://blog.langchain.dev/rss/",
     "LlamaIndex Blog": "https://www.llamaindex.ai/blog/rss.xml",
     "Perplexity AI Blog": "https://www.perplexity.ai/hub/blog/rss",
-    
-    # LLM & AI Framework News
+    "AI21 Labs Blog": "https://www.ai21.com/blog/rss.xml",
+    "Cohere AI Blog": "https://txt.cohere.com/rss/",
     "Weights & Biases Blog": "https://wandb.ai/site/rss.xml",
     "Gradient Flow": "https://gradientflow.com/feed/",
-    
-    # Model Context Protocol & AI Infrastructure
+
+    # ── Tech News with Research Focus (MEDIUM PRIORITY) ───────────────
+    "MIT Technology Review AI": "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
+    "Wired AI": "https://www.wired.com/tag/artificial-intelligence/feed/",
     "The New Stack AI": "https://thenewstack.io/tag/artificial-intelligence/feed/",
     "InfoQ AI": "https://www.infoq.com/ai-ml-data-eng/rss/",
-    
-    # NOTE: TechCrunch and VentureBeat removed - too much investment/funding news
-    # If needed, they can be re-added but content_analyzer will heavily filter them
+    "Ars Technica AI": "https://arstechnica.com/tag/artificial-intelligence/feed/",
+    "Quanta Magazine CS": "https://www.quantamagazine.org/computer-science/feed/",
 }
 
 # Web scraping targets for official blogs and research institutions
 WEB_SCRAPING_TARGETS = {
-    # Major AI Companies
+    # ── Major AI Research Labs ────────────────────────────────────────
     "OpenAI": {
         "url": "https://openai.com/blog/",
         "title_selector": "h3 a",
         "link_selector": "h3 a",
-        "content_selector": ".post-content"
+        "content_selector": ".post-content",
     },
     "Google AI": {
         "url": "https://ai.googleblog.com/",
         "title_selector": ".post-title a",
-        "link_selector": ".post-title a", 
-        "content_selector": ".post-content"
+        "link_selector": ".post-title a",
+        "content_selector": ".post-content",
     },
     "DeepMind": {
         "url": "https://deepmind.google/discover/blog/",
         "title_selector": "h3 a",
         "link_selector": "h3 a",
-        "content_selector": ".article-content"
+        "content_selector": ".article-content",
     },
     "Meta AI": {
         "url": "https://ai.meta.com/blog/",
         "title_selector": "h3 a",
         "link_selector": "h3 a",
-        "content_selector": ".article-content"
+        "content_selector": ".article-content",
     },
     "Microsoft Research AI": {
         "url": "https://www.microsoft.com/en-us/research/research-area/artificial-intelligence/",
         "title_selector": "h3 a",
         "link_selector": "h3 a",
-        "content_selector": ".entry-content"
-    },
-    
-    # Academic Institutions
-    "MIT CSAIL": {
-        "url": "https://www.csail.mit.edu/news",
-        "title_selector": ".news-title a",
-        "link_selector": ".news-title a",
-        "content_selector": ".news-content"
-    },
-    "Stanford HAI": {
-        "url": "https://hai.stanford.edu/news",
-        "title_selector": "h3 a",
-        "link_selector": "h3 a",
-        "content_selector": ".article-content"
-    },
-    "Berkeley AI Research": {
-        "url": "https://bair.berkeley.edu/blog/",
-        "title_selector": ".post-title a",
-        "link_selector": ".post-title a",
-        "content_selector": ".post-content"
-    },
-    "Carnegie Mellon AI": {
-        "url": "https://www.cs.cmu.edu/news",
-        "title_selector": "h3 a",
-        "link_selector": "h3 a",
-        "content_selector": ".news-content"
-    },
-    
-    # Research Labs
-    "Allen Institute for AI": {
-        "url": "https://allenai.org/news",
-        "title_selector": "h3 a",
-        "link_selector": "h3 a",
-        "content_selector": ".article-content"
+        "content_selector": ".entry-content",
     },
     "Anthropic": {
         "url": "https://www.anthropic.com/news",
         "title_selector": "h3 a",
         "link_selector": "h3 a",
-        "content_selector": ".article-content"
+        "content_selector": ".article-content",
     },
-    
-    # AI Agent Frameworks & Tools
+    "Apple ML Research": {
+        "url": "https://machinelearning.apple.com/",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": "article, .post-content",
+    },
+    "Amazon Science": {
+        "url": "https://www.amazon.science/",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": "article, .article-content",
+    },
+    "NVIDIA Research": {
+        "url": "https://research.nvidia.com/news",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": "article, .content",
+    },
+
+    # ── Academic Institutions ─────────────────────────────────────────
+    "MIT CSAIL": {
+        "url": "https://www.csail.mit.edu/news",
+        "title_selector": ".news-title a",
+        "link_selector": ".news-title a",
+        "content_selector": ".news-content",
+    },
+    "Stanford HAI": {
+        "url": "https://hai.stanford.edu/news",
+        "title_selector": "h3 a",
+        "link_selector": "h3 a",
+        "content_selector": ".article-content",
+    },
+    "Berkeley AI Research": {
+        "url": "https://bair.berkeley.edu/blog/",
+        "title_selector": ".post-title a",
+        "link_selector": ".post-title a",
+        "content_selector": ".post-content",
+    },
+    "Carnegie Mellon AI": {
+        "url": "https://www.cs.cmu.edu/news",
+        "title_selector": "h3 a",
+        "link_selector": "h3 a",
+        "content_selector": ".news-content",
+    },
+    "Oxford AI": {
+        "url": "https://www.ox.ac.uk/news-and-events/find-an-event/?type=all&topic=artificial-intelligence",
+        "title_selector": "h3 a, h2 a",
+        "link_selector": "h3 a, h2 a",
+        "content_selector": "article, .content",
+    },
+    "Cambridge ML Group": {
+        "url": "https://mlg.eng.cam.ac.uk/blog/",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": "article, .post-content",
+    },
+
+    # ── Independent Research Labs ─────────────────────────────────────
+    "Allen Institute for AI": {
+        "url": "https://allenai.org/news",
+        "title_selector": "h3 a",
+        "link_selector": "h3 a",
+        "content_selector": ".article-content",
+    },
+    "EleutherAI": {
+        "url": "https://blog.eleuther.ai/",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": "article, .post-content",
+    },
+    "Cohere For AI": {
+        "url": "https://cohere.com/research",
+        "title_selector": "h2 a, h3 a",
+        "link_selector": "h2 a, h3 a",
+        "content_selector": "article, .article-content",
+    },
+
+    # ── AI Agent Frameworks & Tools ───────────────────────────────────
     "LangChain": {
         "url": "https://blog.langchain.dev/",
         "title_selector": "h2 a, h3 a",
         "link_selector": "h2 a, h3 a",
-        "content_selector": ".post-content, article"
+        "content_selector": ".post-content, article",
     },
     "LlamaIndex": {
         "url": "https://www.llamaindex.ai/blog",
         "title_selector": "h2 a, h3 a",
         "link_selector": "h2 a, h3 a",
-        "content_selector": ".article-content, article"
+        "content_selector": ".article-content, article",
     },
     "Hugging Face": {
         "url": "https://huggingface.co/blog",
         "title_selector": "h2 a, h3 a",
         "link_selector": "h2 a, h3 a",
-        "content_selector": "article, .prose"
-    },
-    "Cohere AI": {
-        "url": "https://cohere.com/blog",
-        "title_selector": "h2 a, h3 a",
-        "link_selector": "h2 a, h3 a",
-        "content_selector": ".article-content, article"
-    },
-    "AI21 Labs": {
-        "url": "https://www.ai21.com/blog",
-        "title_selector": "h2 a, h3 a",
-        "link_selector": "h2 a, h3 a",
-        "content_selector": ".post-content, article"
+        "content_selector": "article, .prose",
     },
     "Weights & Biases": {
         "url": "https://wandb.ai/site/articles",
         "title_selector": "h2 a, h3 a",
         "link_selector": "h2 a, h3 a",
-        "content_selector": "article, .article-content"
+        "content_selector": "article, .article-content",
     },
     "Perplexity AI": {
         "url": "https://www.perplexity.ai/hub/blog",
         "title_selector": "h2 a, h3 a, .post-title a",
         "link_selector": "h2 a, h3 a, .post-title a",
-        "content_selector": "article, .post-content, .article-content"
+        "content_selector": "article, .post-content, .article-content",
     },
 }
