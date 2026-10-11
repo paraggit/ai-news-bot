@@ -7,7 +7,10 @@ Lightweight API client — no local model overhead, ideal for Raspberry Pi.
 
 from typing import Optional
 
-import anthropic
+try:
+    import anthropic
+except ImportError:
+    anthropic = None
 
 from .base import BaseSummarizer
 
@@ -17,6 +20,12 @@ class AnthropicSummarizer(BaseSummarizer):
 
     def __init__(self, config) -> None:
         super().__init__(config, "Anthropic")
+
+        if anthropic is None:
+            raise ImportError(
+                "The 'anthropic' package is required to use AnthropicSummarizer. "
+                "Install it with: poetry run pip install anthropic"
+            )
 
         if not config.anthropic_api_key:
             raise ValueError("Anthropic API key is required for Anthropic summarizer")
